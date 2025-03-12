@@ -1,6 +1,7 @@
+from django.db.models import Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer
+from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer, ProductInfoSerializer
 from .models import Product, Order, OrderItem
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -60,3 +61,13 @@ def function_based_order_list_for_nested_serializer(request):
         orders = Order.objects.all()
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def product_info(request):
+    products = Product.objects.all()
+    serializer = ProductInfoSerializer({
+        'products': products,
+        'count': len(products),
+        'max_price': products.aggregate(max_price=Max('price'))['max_price']
+    })
+    return Response(serializer.data)
