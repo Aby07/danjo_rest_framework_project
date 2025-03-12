@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from .serializers import ProductSerializer
 from .models import Product
-from rest_framework.deccorators import api_view
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -48,7 +48,7 @@ def function_based_product_detail_update_delete(request, pk):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.error_messages)  
+        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)  
     
     elif request.method == 'DELETE':
         product.delete()
