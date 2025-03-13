@@ -13,7 +13,7 @@ urlpatterns = [
     path('genericsBasedProductList/', views.GenericsBasedProductList.as_view()),
     path('genericsBasedProductDetails/<int:pk>', views.GenericsBasedProductDetails.as_view()),
 
-    path('genericsBasedUserOrderList/', views.GenericsBasedUserOrderList.as_view()), # loged in user order only
+    path('genericsBasedUserOrderList/', views.GenericsBasedUserOrderList.as_view(), name='user-orders'), # loged in user order only
 
 
 ]
