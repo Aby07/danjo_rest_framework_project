@@ -11,9 +11,9 @@ urlpatterns = [
     path('orders/', views.function_based_order_list_for_nested_serializer),
 
     path('genericsBasedProduct/', views.GenericsBasedProductList.as_view()),
-    path('genericsBasedProduct/create', views.GenericsBasedProductCreate.as_view(), name='user-orders'), # loged in user order only
+    path('genericsBasedProduct/create/', views.GenericsBasedProductCreate.as_view(), name='user-orders'), # loged in user order only
     path('genericsBasedProduct/<int:pk>', views.GenericsBasedProductDetails.as_view()),
-    path('genericsBasedProduct/ListCreate', views.GenericsBasedProductCreateList.as_view()),
+    path('genericsBasedProduct/ListCreate/', views.GenericsBasedProductCreateList.as_view()),
     path('genericsBasedUserOrderList/', views.GenericsBasedUserOrderList.as_view(), name='user-orders'), # loged in user order only
 
     path('apiViewBasedProductInfo/', views.ApiViewBasedProductInfo.as_view()),
