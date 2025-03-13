@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.views import APIView
 
 
@@ -82,13 +82,19 @@ class GenericsBasedProductList(generics.ListAPIView): # list all product
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+class GenericsBasedProductCreate(generics.CreateAPIView): 
+    model = Product
+    serializer_class = ProductSerializer
+
 class GenericsBasedProductCreateList(generics.ListCreateAPIView): 
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-class GenericsBasedProductCreate(generics.CreateAPIView): 
-    model = Product
-    serializer_class = ProductSerializer
+    def get_permissions(self): # override the permission 
+        self.permission_classes = [AllowAny]
+        if self.request.method == 'POST':
+            self.permission_classes = [IsAdminUser]
+        return super().get_permissions()
 
 class GenericsBasedProductDetails(generics.RetrieveAPIView): #single product retrive
     queryset = Product.objects.all()
