@@ -6,9 +6,10 @@ from .models import Product, Order, OrderItem
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 
-
-#normal json based view
+# normal json based view
 # def product_list(request):
 #     products = Product.objects.all()
 #     print('products', products)
@@ -71,3 +72,24 @@ def product_info(request):
         'max_price': products.aggregate(max_price=Max('price'))['max_price']
     })
     return Response(serializer.data)
+
+# CLASS BASED VIEW - GENERIC VIEW
+
+class GenericsBasedProductList(generics.ListAPIView): # list all product
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class GenericsBasedProductDetails(generics.RetrieveAPIView): #single product retrive
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+class GenericsBasedUserOrderList(generics.ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = super().get_queryset()
+        return qs.filter(user=user)

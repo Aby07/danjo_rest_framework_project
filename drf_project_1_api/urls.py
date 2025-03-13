@@ -9,4 +9,11 @@ urlpatterns = [
     path('products/info/', views.product_info),
 
     path('orders/', views.function_based_order_list_for_nested_serializer),
+
+    path('genericsBasedProductList/', views.GenericsBasedProductList.as_view()),
+    path('genericsBasedProductDetails/<int:pk>', views.GenericsBasedProductDetails.as_view()),
+
+    path('genericsBasedUserOrderList/', views.GenericsBasedUserOrderList.as_view()), # loged in user order only
+
+
 ]

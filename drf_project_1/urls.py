@@ -7,3 +7,6 @@ urlpatterns = [
     path('', include('drf_project_1_api.urls')),
     
 ]
+
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+
