@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
 
 urlpatterns = [
     path('products/', views.function_based_product_list_or_create),
@@ -13,9 +14,14 @@ urlpatterns = [
     path('genericsBasedProduct/', views.GenericsBasedProductList.as_view()),
     path('genericsBasedProduct/create/', views.GenericsBasedProductCreate.as_view(), name='user-orders'), # loged in user order only
     path('genericsBasedProduct/<int:pk>', views.GenericsBasedProductDetails.as_view()),
-    path('genericsBasedProduct/ListCreate/', views.GenericsBasedProductCreateList.as_view()),
+    path('GenericsBasedProductRetrieveUpdateDestroy/<int:pk>', views.GenericsBasedProductRetrieveUpdateDestroy.as_view()),
+    path('GenericsBasedProductDetails', views.GenericsBasedProductCreateList.as_view()),
     path('genericsBasedUserOrderList/', views.GenericsBasedUserOrderList.as_view(), name='user-orders'), # loged in user order only
 
     path('apiViewBasedProductInfo/', views.ApiViewBasedProductInfo.as_view()),
 
 ]
+
+router = DefaultRouter()
+router.register('OrderViewSet', views.OrderViewSet, basename='OrderViewSets')
+urlpatterns += router.urls

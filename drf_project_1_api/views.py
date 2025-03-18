@@ -1,16 +1,19 @@
 from django.db.models import Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer, ProductInfoSerializer
-from .models import Product, Order, OrderItem
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import api_view
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.views import APIView
 
-
+from .filters import OrderFilter, ProductFilter
+from .models import Order, OrderItem, Product
+from .serializers import (OrderItemSerializer, OrderSerializer,
+                          ProductInfoSerializer, ProductSerializer, OrderCreateSerializer)
 
 # normal json based view
 # def product_list(request):
@@ -87,8 +90,19 @@ class GenericsBasedProductCreate(generics.CreateAPIView):
     serializer_class = ProductSerializer
 
 class GenericsBasedProductCreateList(generics.ListCreateAPIView): 
-    queryset = Product.objects.all()
+    queryset = Product.objects.order_by('pk')
     serializer_class = ProductSerializer
+    #filterset_fields = ['name'] #filtering based on the default attribute filterset
+    filterset_class = ProductFilter # created a filter class on filter.py
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['name']
+
+    pagination_class = PageNumberPagination
+    pagination_class.page_size = 4
+    pagination_class.page_query_param = 'pgnm' # change query name
+    pagination_class.page_size_query_param = 'page_size' # dynamically add page size in query parameter
+    max_page_size = 7
 
     def get_permissions(self): # override the permission 
         self.permission_classes = [AllowAny]
@@ -100,6 +114,18 @@ class GenericsBasedProductDetails(generics.RetrieveAPIView): #single product ret
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'pk'
+
+class GenericsBasedProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_url_kwarg = 'pk'
+
+    def get_permissions(self): # override the permission 
+        self.permission_classes = [AllowAny]
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            self.permission_classes = [IsAdminUser]
+        return super().get_permissions()
+
 
 class GenericsBasedUserOrderList(generics.ListAPIView):
     queryset = Order.objects.all()
@@ -123,3 +149,28 @@ class ApiViewBasedProductInfo(APIView):
             'max_price': products.aggregate(max_price=Max('price'))['max_price']
         })
         return Response(serializer.data)
+
+# CLASS BASED VIEW - VIEWSETS
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+    filterset_class = OrderFilter
+    filter_backends = [DjangoFilterBackend]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        # can also check if POST: if self.request.method == 'POST'
+        if self.action == 'create':
+            return OrderCreateSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if not self.request.user.is_staff:
+            qs = qs.filter(user=self.request.user)
+        return qs
